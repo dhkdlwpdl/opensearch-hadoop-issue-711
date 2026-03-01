@@ -23,6 +23,9 @@ COPY scripts/setup_index.sh /app/scripts/
 COPY scripts/verify_opensearch.sh /app/scripts/
 RUN chmod +x /app/scripts/*.sh
 
+# Hadoop Kerberos 비활성화용 설정 (simple 인증)
+COPY conf/hadoop /app/hadoop-conf
+
 COPY run_test.sh /app/
 RUN chmod +x /app/run_test.sh
 
