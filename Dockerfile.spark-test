@@ -1,0 +1,29 @@
+# Spark 3.3 + opensearch-hadoop connector (이슈 #711 테스트)
+FROM bitnami/spark:3.3.4
+
+USER root
+
+ARG OPENSEARCH_HADOOP_VERSION=1.0.1
+ARG CONNECTOR_JAR=opensearch-spark-30_2.12-${OPENSEARCH_HADOOP_VERSION}.jar
+ARG MAVEN_URL="https://repo1.maven.org/maven2/org/opensearch/client/opensearch-spark-30_2.12/${OPENSEARCH_HADOOP_VERSION}/${CONNECTOR_JAR}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/connectors \
+    && curl -sL -o "/opt/connectors/${CONNECTOR_JAR}" "${MAVEN_URL}"
+
+ENV SPARK_OPENSEARCH_JAR="/opt/connectors/${CONNECTOR_JAR}"
+
+WORKDIR /app
+COPY scripts/spark_read_test.py /app/
+COPY scripts/setup_index.sh /app/scripts/
+COPY scripts/verify_opensearch.sh /app/scripts/
+RUN chmod +x /app/scripts/*.sh
+
+COPY run_test.sh /app/
+RUN chmod +x /app/run_test.sh
+
+USER 1001
+ENTRYPOINT ["/app/run_test.sh"]
