@@ -26,5 +26,11 @@ RUN chmod +x /app/scripts/*.sh
 COPY run_test.sh /app/
 RUN chmod +x /app/run_test.sh
 
+# USER 1001 이 JAR 및 /app 읽을 수 있도록 권한 부여
+RUN chown -R 1001:root /opt/connectors /app
+
+# Ivy 경로 오류 방지: basedir must be absolute (HOME 미설정 시 ?/.ivy2/local 로 해석됨)
+ENV HOME=/app
+
 USER 1001
 ENTRYPOINT ["/app/run_test.sh"]
