@@ -1,19 +1,16 @@
-version: "3.8"
-
 services:
   opensearch:
-    image: opensearchproject/opensearch:2.19.0
+    # 2.11.x = Java 17 번들 (2.12+ 는 Java 21 → Docker Desktop ARM64에서 SIGILL 발생 가능)
+    image: opensearchproject/opensearch:2.11.1
+    platform: linux/arm64
     container_name: opensearch-issue-711
     environment:
       - discovery.type=single-node
-      - bootstrap.memory_lock=true
+      - bootstrap.memory_lock=false
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
       - DISABLE_SECURITY_PLUGIN=true
       - DISABLE_INSTALL_DEMO_CONFIG=true
     ulimits:
-      memlock:
-        soft: -1
-        hard: -1
       nofile:
         soft: 65536
         hard: 65536
@@ -29,7 +26,9 @@ services:
       retries: 30
       start_period: 30s
 
+  # Spark + opensearch-hadoop 테스트 실행용 (Bitnami 이미지는 amd64만 제공 → 플랫폼 명시)
   spark-test:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile.spark-test
