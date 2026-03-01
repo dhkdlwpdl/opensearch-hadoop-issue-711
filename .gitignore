@@ -14,5 +14,3 @@ __pycache__/
 # Docker
 .docker/
 
-# Temp files for git history setup
-*.initial*
