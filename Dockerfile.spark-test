@@ -29,8 +29,15 @@ COPY conf/hadoop /app/hadoop-conf
 COPY run_test.sh /app/
 RUN chmod +x /app/run_test.sh
 
-# USER 1001 이 JAR 및 /app 읽을 수 있도록 권한 부여
+# USER 1001 이 JAR, /app, hadoop-conf 읽을 수 있도록 권한 부여
 RUN chown -R 1001:root /opt/connectors /app
+
+# Bitnami Spark 이슈: UID 1001이 /etc/passwd에 없으면 UnixLoginModule이 "invalid null input: name" 발생
+# → KerberosAuthException 방지를 위해 spark 사용자(UID 1001) 등록
+RUN if ! getent passwd 1001 >/dev/null 2>&1; then \
+      echo 'spark:x:1001:1001:Spark User:/app:/bin/bash' >> /etc/passwd; \
+      echo 'spark:x:1001:' >> /etc/group; \
+    fi
 
 # Ivy 경로 오류 방지: basedir must be absolute (HOME 미설정 시 ?/.ivy2/local 로 해석됨)
 ENV HOME=/app
