@@ -1,0 +1,39 @@
+# Spark 3.x + opensearch-hadoop connector (Custom JAR — 이슈 #711 테스트)
+# JAR는 빌드 컨텍스트의 connectors/ 디렉터리에서 ADD. 공통 부분은 Dockerfile.spark-test와 동일.
+FROM public.ecr.aws/bitnami/spark:3.4.1
+
+USER root
+
+# ---------- Custom 전용: 로컬(빌드 결과) JAR를 이미지에 ADD ----------
+ARG CUSTOM_JAR_FILENAME=opensearch-spark-30_2.12-1.3.0-SNAPSHOT.jar
+RUN mkdir -p /opt/connectors
+COPY connectors/${CUSTOM_JAR_FILENAME} /opt/connectors/
+ENV SPARK_OPENSEARCH_JAR=/opt/connectors/${CUSTOM_JAR_FILENAME}
+# ---------------------------------------------------------------------
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY scripts/spark_read_test.py /app/
+COPY scripts/setup_index.sh /app/scripts/
+COPY scripts/verify_opensearch.sh /app/scripts/
+RUN chmod +x /app/scripts/*.sh
+
+COPY conf/hadoop /app/hadoop-conf
+
+COPY run_test.sh /app/
+RUN chmod +x /app/run_test.sh
+
+RUN chown -R 1001:root /opt/connectors /app
+
+RUN if ! getent passwd 1001 >/dev/null 2>&1; then \
+      echo 'spark:x:1001:1001:Spark User:/app:/bin/bash' >> /etc/passwd; \
+      echo 'spark:x:1001:' >> /etc/group; \
+    fi
+
+ENV HOME=/app
+
+USER 1001
+ENTRYPOINT ["/app/run_test.sh"]

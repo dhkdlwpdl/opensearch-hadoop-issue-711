@@ -18,7 +18,7 @@
 ```
 opensearch-hadoop-issue-711/
 ├── docker-compose.yml      # OpenSearch + Spark 테스트 서비스
-├── Dockerfile.spark-test   # Spark 3.4 (Bitnami ECR) + opensearch-hadoop 1.0.1 이미지
+├── Dockerfile.spark-test   # Spark 3.4 (Bitnami ECR) + opensearch-hadoop 1.0.1 이미지 (spark-test / spark-test-fix 공용)
 ├── run_test.sh             # 컨테이너 내부 전체 테스트 진입점
 ├── scripts/
 │   ├── setup_index.sh      # 인덱스 생성 + 테스트 도큐먼트 삽입
@@ -44,9 +44,11 @@ docker compose up --build
 ```
 
 - **OpenSearch**: `http://localhost:9200` 에서 접근 가능 (헬스 체크 후 spark-test 실행)
-- **spark-test** 컨테이너가 자동으로:
+- **spark-test** (또는 **spark-test-fix**) 컨테이너가 자동으로:
   1. `setup_index.sh` 로 `test-index` 생성 및 테스트 도큐먼트 1건 삽입
   2. `spark_read_test.py` 로 opensearch-hadoop 커넥터를 사용해 읽기
+
+**spark-test-fix**: spark-test와 **동일 이미지** 사용. fix 브랜치 JAR을 쓰려면 `docker-compose.yml`의 spark-test-fix 서비스에서 volume 주석을 해제하고 로컬 JAR 경로를 넣으면 됩니다 (예: `./download/opensearch-hadoop/spark/sql-30/build/libs/opensearch-spark-30_2.12-*.jar:/opt/connectors/opensearch-spark-30_2.12-1.0.1.jar`).
 
 **버그가 재현되면** 터미널에 다음이 보입니다:
 

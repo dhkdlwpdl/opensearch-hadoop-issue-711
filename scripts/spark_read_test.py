@@ -11,6 +11,8 @@ import os
 import sys
 
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import from_json, schema_of_json, col, lit, to_json
+from pyspark.sql.types import StringType
 
 def main():
     opensearch_host = os.environ.get("OPENSEARCH_HOST", "localhost")
@@ -31,6 +33,8 @@ def main():
 
     print("=" * 60)
     print("OpenSearch 노드:", nodes)
+    jar_path = os.environ.get("SPARK_OPENSEARCH_JAR", "")
+    print("사용 중인 커넥터 JAR:", jar_path or "(미설정)")
     print("=" * 60)
 
     df = (

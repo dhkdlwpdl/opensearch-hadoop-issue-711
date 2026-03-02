@@ -26,13 +26,34 @@ services:
       retries: 30
       start_period: 30s
 
-  # Spark + opensearch-hadoop 테스트 실행용 (Bitnami 이미지는 amd64만 제공 → 플랫폼 명시)
+  # Spark + opensearch-hadoop 테스트 (Maven 배포 JAR)
   spark-test:
     platform: linux/amd64
+    image: spark-test-issue-711
     build:
       context: .
       dockerfile: Dockerfile.spark-test
     container_name: spark-test-issue-711
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    environment:
+      - OPENSEARCH_HOST=opensearch
+      - OPENSEARCH_PORT=9200
+    volumes:
+      - ./scripts:/app/scripts
+      - ./test_output:/app/test_output
+
+  # Custom JAR: Dockerfile.spark-test.custom 로 빌드 (connectors/ 에 JAR 넣고 빌드)
+  spark-test-fix:
+    platform: linux/amd64
+    image: spark-test-fix-issue-711
+    build:
+      context: .
+      dockerfile: Dockerfile.spark-test.custom
+      args:
+        CUSTOM_JAR_FILENAME: opensearch-spark-30_2.12-1.3.0-SNAPSHOT.jar
+    container_name: spark-test-fix-issue-711
     depends_on:
       opensearch:
         condition: service_healthy

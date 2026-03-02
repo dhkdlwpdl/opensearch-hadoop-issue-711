@@ -4,6 +4,7 @@ FROM public.ecr.aws/bitnami/spark:3.4.1
 
 USER root
 
+# ---------- Official 전용: Maven에서 JAR 다운로드 ----------
 ARG OPENSEARCH_HADOOP_VERSION=1.0.1
 ARG CONNECTOR_JAR=opensearch-spark-30_2.12-${OPENSEARCH_HADOOP_VERSION}.jar
 ARG MAVEN_URL="https://repo1.maven.org/maven2/org/opensearch/client/opensearch-spark-30_2.12/${OPENSEARCH_HADOOP_VERSION}/${CONNECTOR_JAR}"
@@ -16,6 +17,7 @@ RUN mkdir -p /opt/connectors \
     && curl -sL -o "/opt/connectors/${CONNECTOR_JAR}" "${MAVEN_URL}"
 
 ENV SPARK_OPENSEARCH_JAR="/opt/connectors/${CONNECTOR_JAR}"
+# ---------------------------------------------------------------------
 
 WORKDIR /app
 COPY scripts/spark_read_test.py /app/

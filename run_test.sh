@@ -31,11 +31,18 @@ if [ ! -f "${SPARK_OPENSEARCH_JAR}" ]; then
   exit 1
 fi
 
+echo "사용 중인 커넥터 JAR: ${SPARK_OPENSEARCH_JAR}"
+ls -la "${SPARK_OPENSEARCH_JAR}"
+echo ""
+
 spark-submit \
   --master "local[*]" \
   --conf spark.jars.ivy="$SPARK_JARS_IVY" \
   --conf spark.hadoop.hadoop.security.authentication=simple \
   --conf spark.hadoop.hadoop.security.authorization=false \
+  --conf spark.driver.extraClassPath="${SPARK_OPENSEARCH_JAR}" \
+  --conf spark.executor.extraClassPath="${SPARK_OPENSEARCH_JAR}" \
+  --driver-class-path "${SPARK_OPENSEARCH_JAR}" \
   --jars "${SPARK_OPENSEARCH_JAR}" \
   /app/spark_read_test.py \
   "$OPENSEARCH_HOST" \

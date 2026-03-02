@@ -14,3 +14,6 @@ __pycache__/
 # Docker
 .docker/
 
+# Custom 빌드용 JAR (이미지 빌드 시 connectors/에 넣어 사용)
+connectors/*.jar
+
